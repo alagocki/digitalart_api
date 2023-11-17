@@ -38,7 +38,6 @@ def decode_token(token):
 
 def check_active(token: str = Depends(oauth2_scheme)):
     claims = decode_token(token)
-    print(claims.get("active"))
     if claims.get("active"):
         return claims
     raise HTTPException(
