@@ -21,6 +21,11 @@ def get_users(db: Session):
     return users
 
 
-def get_user_username(db: Session, username: str):
+def get_user_by_username(db: Session, username: str):
     user = db.query(models_and_schemas.User).filter(models_and_schemas.User.username == username).first()
+    return user
+
+
+def get_user_by_id(db: Session, userid: int):
+    user = db.query(models_and_schemas.User).filter(models_and_schemas.User.id == userid).first()
     return user
