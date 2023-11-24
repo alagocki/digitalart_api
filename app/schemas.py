@@ -1,34 +1,29 @@
-from sqlmodel import SQLModel, Field
-from pydantic import EmailStr
 from enum import Enum
 from typing import Optional
 
-
-class Roles(str, Enum):
-    user = "user"
-    admin = "admin"
+from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
+from sqlmodel import Field, SQLModel
 
 
 class Status(str, Enum):
     processed = "bearbeitet"
-    unprocessed = "bearbeitet"
+    unprocessed = "unbearbeitet"
     downloaded = "runtergeladen"
 
 
-class BaseUser(SQLModel):
-    email: EmailStr
+class UserRead(BaseUser):
     username: str
-    is_active: bool = False
-    role: Roles
+    customer: bool = True
 
 
-class User(BaseUser, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    hashed_password: str
+class UserCreate(BaseUserCreate):
+    username: str
+    customer: bool = True
 
 
-class UserSchema(BaseUser):
-    password: str
+class UserUpdate(BaseUserUpdate):
+    username: str
+    customer: bool = True
 
 
 class Image(SQLModel, table=True):
