@@ -1,8 +1,11 @@
+import uuid
+from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
-from sqlmodel import Field, SQLModel
+from sqlalchemy.dialects.postgresql import UUID
+from sqlmodel import Field
 
 
 class Status(str, Enum):
@@ -26,11 +29,13 @@ class UserUpdate(BaseUserUpdate):
     customer: bool = True
 
 
-class Image(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    owner: Optional[int] = Field(default=None, foreign_key="user.id")
-    description: str = Field(default=None)
+class Image:
+    id: Optional[UUID] = Field(primary_key=True, index=True)
+    name: str = Field(nullable=False, max_length=128)
+    owner: int = Field(nullable=False)
+    description: Optional[str] = Field(max_length=500)
     status: Status
-    downloaded: int = Field(default=0)
-    path: str = Field(default=None)
+    downloaded: Optional[int]
+    path: str = Field(max_length=255)
+    upload: datetime = Field(nullable=False)
+
