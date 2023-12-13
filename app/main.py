@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.cors import CORSMiddleware
 
-from app.db import User, create_db_and_tables, get_async_session, Image
+from app.db import Image, User, create_db_and_tables, get_async_session
 from app.schemas import UserCreate, UserRead, UserUpdate
 from app.users import active_user, auth_backend, fastapi_users
 
@@ -47,9 +47,9 @@ async def user_image_route(image_id: int, user: User = Depends(active_user)):
 
 @app.get("/images/all", tags=["Content"])
 async def all_images_route(db: AsyncSession = Depends(get_async_session)):
-    images : [Image] = await db.execute(select(Image).order_by(Image.upload))
+    images: [Image] = await db.execute(select(Image).order_by(Image.upload))
     results = [list(row) for row in images]
-    return {'results': results}
+    return {"results": results}
 
 
 @app.on_event("startup")

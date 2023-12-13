@@ -1,9 +1,9 @@
 from enum import Enum
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
-
 from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger, String
 from sqlalchemy.dialects.postgresql import UUID
+
 
 class Status(str, Enum):
     processed = "bearbeitet"
