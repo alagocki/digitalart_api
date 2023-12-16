@@ -59,7 +59,6 @@ async def upload_image_route(
     db: AsyncSession = Depends(get_async_session),
     user: User = Depends(active_user),
 ):
-
     image = Image(
         name=data.name,
         owner=user,

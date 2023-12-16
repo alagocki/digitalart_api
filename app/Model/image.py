@@ -12,7 +12,14 @@ from app.Model.model import Base
 class Image(Base):
     __tablename__ = "images"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True, nullable=False, unique=True)
+    id = Column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True,
+        nullable=False,
+        unique=True,
+    )
     name = Column(String(128))
     owner_id = Column(ForeignKey("user.id"), nullable=False)
     description = Column(String(500))
