@@ -1,13 +1,14 @@
-import json
-
 from fastapi import Depends, FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.cors import CORSMiddleware
 
-from app.db import Image, User, create_db_and_tables, get_async_session
-from app.schemas import UserCreate, UserRead, UserUpdate
-from app.users import active_user, auth_backend, fastapi_users
+from app.Classes.users import active_user, auth_backend, fastapi_users
+from app.Database.db import create_db_and_tables, get_async_session
+from app.Model.image import Image
+from app.Model.user import User
+from app.Schema.image import ImageSchema
+from app.Schema.user import UserCreate, UserRead, UserUpdate
 
 app = FastAPI(
     title="Andreas Lagocki | DigitalArt",
@@ -50,6 +51,32 @@ async def all_images_route(db: AsyncSession = Depends(get_async_session)):
     images: [Image] = await db.execute(select(Image).order_by(Image.upload))
     results = [list(row) for row in images]
     return {"results": results}
+
+
+@app.post("/images/upload", tags=["Content"])
+async def upload_image_route(
+    data: ImageSchema,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+):
+
+    image = Image(
+        name=data.name,
+        owner=user,
+        description=data.description,
+        status="unprocessed",
+        downloaded=data.downloaded,
+        path=data.path,
+    )
+
+    try:
+        db.add(image)
+        await db.commit()
+        return {"message": "Upload erfolgreich"}
+    except Exception as e:
+        raise e
+    finally:
+        await db.close()
 
 
 @app.on_event("startup")
