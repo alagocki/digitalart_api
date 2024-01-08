@@ -2,16 +2,24 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
 from app.Classes.users import active_user, auth_backend, fastapi_users
 from app.Database.db import create_db_and_tables, get_async_session
-from app.Model.image import Image
+from app.Model import user
+from app.Model.imagemodel import ImageModel
 from app.Model.user import User
-from app.Schema.image import ImageSchema
+from app.Schema.customeradressschema import CustomerAddressCreate
+from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
+from app.Services.adressservice import create_customer_address
+from app.Services.orderservice import create_order
+from app.Services.userservice import get_all_use
 
 app = FastAPI(
     title="Andreas Lagocki | DigitalArt",
+    description="This is the backend for the Andreas Lagocki | DigitalArt website",
+    version="1.0.0",
 )
 app.include_router(fastapi_users.get_auth_router(auth_backend), tags=["Authentication"])
 app.include_router(
@@ -23,9 +31,7 @@ app.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate), tags=["User"], prefix="/users"
 )
 
-origins = [
-    "http://localhost:3000",
-]
+origins = ["http://localhost:3000", "localhost:3000"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +40,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/user/all", tags=["User"])
+async def all_users_route(db: AsyncSession = Depends(get_async_session)):
+    return await get_all_use(db)
 
 
 @app.get("/user/images", tags=["User"])
@@ -46,38 +56,34 @@ async def user_image_route(image_id: int, user: User = Depends(active_user)):
     return {"message", f"Bild {image_id} von {user.username} mit {user.email}"}
 
 
-@app.get("/images/all", tags=["Content"])
-async def all_images_route(db: AsyncSession = Depends(get_async_session)):
-    images: [Image] = await db.execute(select(Image).order_by(Image.upload))
-    results = [list(row) for row in images]
-    return {"results": results}
-
-
-@app.post("/images/upload", tags=["Content"])
-async def upload_image_route(
-    data: ImageSchema,
+@app.post("/user/adress", tags=["User"])
+async def user_adress_route(
+    data: CustomerAddressCreate,
     db: AsyncSession = Depends(get_async_session),
     user: User = Depends(active_user),
 ):
-    image = Image(
-        name=data.name,
-        owner=user,
-        description=data.description,
-        status="unprocessed",
-        downloaded=data.downloaded,
-        path=data.path,
-    )
+    return await create_customer_address(data, db)
 
-    try:
-        db.add(image)
-        await db.commit()
-        return {"message": "Upload erfolgreich"}
-    except Exception as e:
-        raise e
-    finally:
-        await db.close()
+
+@app.get("/images/all", tags=["Images"])
+async def all_images_route(db: AsyncSession = Depends(get_async_session)):
+    images: [ImageModel] = await db.execute(
+        select(ImageModel).order_by(ImageModel.upload)
+    )
+    results = [row.ImageModel for row in images]
+    return {"images": results}
+
+
+@app.post("/order/create", tags=["Orders"])
+async def create_order_route(
+    data: OrderCreate,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+):
+    return await create_order(data, db, user)
 
 
 @app.on_event("startup")
 async def on_startup():
     await create_db_and_tables()
+    print("Database created")
