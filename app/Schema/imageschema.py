@@ -1,6 +1,7 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from pydantic.schema import Optional
 
 
 class Status(Enum):
@@ -13,8 +14,20 @@ class ImageSchema(BaseModel):
     name: str
     description: str
     status: Status
-    downloaded: bool = False
+    downloaded: bool
     path: str
 
     class Config:
         orm_mode = True
+
+
+class ImageCreate(ImageSchema):
+    pass
+
+
+class ImageRead(ImageSchema):
+    id: str
+
+
+class ImageUpdate(ImageSchema):
+    pass

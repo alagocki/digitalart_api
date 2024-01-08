@@ -2,15 +2,12 @@ from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
 
 
 class UserRead(BaseUser):
-    username: str
-    customer: bool = True
+    customer: int
 
 
 class UserCreate(BaseUserCreate):
-    username: str
-    customer: bool = True
+    customer: int
 
 
 class UserUpdate(BaseUserUpdate):
-    username: str
-    customer: bool = True
+    customer: int

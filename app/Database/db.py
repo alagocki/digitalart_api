@@ -5,7 +5,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from app.Model.image import Image
 from app.Model.model import Base
 from app.Model.user import User
 
