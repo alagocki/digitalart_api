@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Query
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
@@ -14,7 +15,7 @@ from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
 from app.Services.adressservice import create_customer_address
 from app.Services.orderservice import create_order
-from app.Services.userservice import get_all_use
+from app.Services.userservice import get_all_customer
 
 app = FastAPI(
     title="Andreas Lagocki | DigitalArt",
@@ -43,7 +44,7 @@ app.add_middleware(
 
 @app.get("/user/all", tags=["User"])
 async def all_users_route(db: AsyncSession = Depends(get_async_session)):
-    return await get_all_use(db)
+    return await get_all_customer(db)
 
 
 @app.get("/user/images", tags=["User"])
@@ -62,7 +63,7 @@ async def user_adress_route(
     db: AsyncSession = Depends(get_async_session),
     user: User = Depends(active_user),
 ):
-    return await create_customer_address(data, db)
+    return await create_customer_address(data, db, user)
 
 
 @app.get("/images/all", tags=["Images"])

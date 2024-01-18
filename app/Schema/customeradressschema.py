@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pydantic import BaseModel
 
 
@@ -5,12 +7,12 @@ class CustomerAddressSchema(BaseModel):
     forename: str
     lastname: str
     street: str
-    number: int
+    number: str
     city: str
     zip: int
     country: str
     phone: str
-    customernr: int
+    customer_id: str
 
     class Config:
         orm_mode = True

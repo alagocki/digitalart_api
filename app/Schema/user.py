@@ -1,13 +1,15 @@
+from typing import Optional
+
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
 
 
 class UserRead(BaseUser):
-    customer: int
+    customer: Optional[int] = None
 
 
 class UserCreate(BaseUserCreate):
-    customer: int
+    customer: Optional[int] = None
 
 
 class UserUpdate(BaseUserUpdate):
-    customer: int
+    customer: Optional[int] = None

@@ -12,17 +12,18 @@ from app.Schema.customeradressschema import CustomerAddressCreate
 
 async def create_customer_address(
     data: CustomerAddressCreate,
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_async_session),
+    customer: User = Depends(active_user)
 ):
 
-    customer = await db.execute(select(User).where(User.customer == data.customernr))
-    customer_id_db = customer.first()[0].id
+    # customer = await db.execute(select(User).where(User.customer == data.customernr))
+    # customer_id_db = customer.first()[0].id
 
-    if not customer:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Kunde mit der Nummer {data.customernr} nicht gefunden",
-        )
+    # if not customer:
+    #     raise HTTPException(
+    #         status_code=status.HTTP_404_NOT_FOUND,
+    #         detail=f"Kunde mit der Nummer {data.customernr} nicht gefunden",
+    #     )
 
     new_adress = CustomerAddressModel(
         forename=data.forename,
@@ -33,7 +34,7 @@ async def create_customer_address(
         zip=data.zip,
         country=data.country,
         phone=data.phone,
-        customer_id=customer_id_db,
+        customer_id=data.customer_id,
     )
 
     db.add(new_adress)
