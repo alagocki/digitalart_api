@@ -21,9 +21,11 @@ class OrderModel(Base):
     )
     topic = Column(String(100), index=True, nullable=False)
     owner_id = Column(ForeignKey("user.id"), index=True, nullable=False)
+    customer_id = Column(ForeignKey("user.id"), index=True, nullable=False)
     info = Column(String(500), nullable=True)
     status = Column(String(20), nullable=False)
     created = Column(DateTime, default=datetime.utcnow)
 
-    owner = relationship("User", back_populates="orders")
+    owner = relationship("User", foreign_keys="[OrderModel.owner_id]")
+    customer = relationship("User", foreign_keys="[OrderModel.customer_id]")
     images = relationship("ImageModel", back_populates="orders")

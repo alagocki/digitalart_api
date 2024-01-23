@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -15,7 +16,14 @@ async def create_order(
     db: AsyncSession = Depends(get_async_session),
     user: User = Depends(active_user),
 ):
-    new_order = OrderModel(topic=data.topic, owner=user, info=data.info, status="offen")
+
+    new_order = OrderModel(
+        topic=data.topic,
+        owner_id=user.id,
+        customer_id=data.customer_id,
+        info=data.info,
+        status=data.status,
+    )
     db.add(new_order)
 
     for image in data.images:
