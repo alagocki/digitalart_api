@@ -30,4 +30,4 @@ class CustomerAddressModel(Base):
     created = Column(DateTime, default=datetime.utcnow)
     customer_id = Column(ForeignKey("user.id"), index=True, nullable=False)
 
-    customer = relationship("User", back_populates="address")
+    customer = relationship("User", foreign_keys="[CustomerAddressModel.customer_id]")

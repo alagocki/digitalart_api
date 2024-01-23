@@ -8,5 +8,5 @@ from app.Model.model import Base
 class User(SQLAlchemyBaseUserTableUUID, Base):
     customer = Column(Integer(), default=0, nullable=True, autoincrement=True)
 
-    orders = relationship("OrderModel", back_populates="owner")
-    address = relationship("CustomerAddressModel", back_populates="customer")
+    # orders = relationship("OrderModel", backref="owner")
+    # address = relationship("CustomerAddressModel", back_populates="customer")
