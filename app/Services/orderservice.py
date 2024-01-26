@@ -1,5 +1,9 @@
-from fastapi import Depends, FastAPI, HTTPException, status
-from sqlalchemy import select
+from os.path import abspath
+from pathlib import Path
+from typing import List
+
+from anyio.streams import file
+from fastapi import Depends, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import JSONResponse
 
@@ -10,6 +14,10 @@ from app.Model.ordermodel import OrderModel
 from app.Model.user import User
 from app.Schema.orderschema import OrderCreate
 
+from os.path import dirname, abspath, join
+
+dirname = dirname(dirname(abspath(__file__)))
+images_path = join(dirname, 'CustomerFiles/')
 
 async def create_order(
     data: OrderCreate,
@@ -47,4 +55,26 @@ async def create_order(
     return JSONResponse(
         status_code=status.HTTP_201_CREATED,
         content={"message": "Auftrag erfolgreich angelegt"},
+    )
+
+
+async def upload_images(file_upload: UploadFile):
+    # for file in files:
+    global save_path
+    try:
+        data = await file_upload.read()
+        save_path = images_path+file_upload.filename
+        with open(save_path, 'wb') as f:
+            f.write(data)
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={"message": Exception}
+        )
+    # finally:
+    # file_upload.close()
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": f"Bild erfolgreich hochgeladen path: {save_path}"}
     )
