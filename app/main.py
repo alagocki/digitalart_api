@@ -1,20 +1,19 @@
-from fastapi import Depends, FastAPI
+from typing import List
+
+from fastapi import Depends, FastAPI, UploadFile, File
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Query
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
 
 from app.Classes.users import active_user, auth_backend, fastapi_users
 from app.Database.db import create_db_and_tables, get_async_session
-from app.Model import user
 from app.Model.imagemodel import ImageModel
 from app.Model.user import User
 from app.Schema.customeradressschema import CustomerAddressCreate
 from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
 from app.Services.adressservice import create_customer_address
-from app.Services.orderservice import create_order
+from app.Services.orderservice import create_order, upload_images
 from app.Services.userservice import get_all_customer
 
 app = FastAPI(
@@ -42,10 +41,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/user/all", tags=["User"])
-async def all_users_route(db: AsyncSession = Depends(get_async_session)):
-    return await get_all_customer(db)
-
 
 @app.get("/user/images", tags=["User"])
 async def user_images_route(user: User = Depends(active_user)):
@@ -66,6 +61,11 @@ async def user_adress_route(
     return await create_customer_address(data, db, user)
 
 
+@app.get("/user/all", tags=["User"])
+async def all_users_route(db: AsyncSession = Depends(get_async_session)):
+    return await get_all_customer(db)
+
+
 @app.get("/images/all", tags=["Images"])
 async def all_images_route(db: AsyncSession = Depends(get_async_session)):
     images: [ImageModel] = await db.execute(
@@ -82,6 +82,13 @@ async def create_order_route(
     user: User = Depends(active_user),
 ):
     return await create_order(data, db, user)
+
+
+@app.post("/order/images/upload", tags=["Orders"])
+async def upload(
+        file_upload: UploadFile = File(...),
+):
+    return await upload_images(file_upload)
 
 
 @app.on_event("startup")
