@@ -19,12 +19,12 @@ from os.path import dirname, abspath, join
 dirname = dirname(dirname(abspath(__file__)))
 images_path = join(dirname, 'CustomerFiles/')
 
-async def create_order(
-    data: OrderCreate,
-    db: AsyncSession = Depends(get_async_session),
-    user: User = Depends(active_user),
-):
 
+async def create_order(
+        data: OrderCreate,
+        db: AsyncSession = Depends(get_async_session),
+        user: User = Depends(active_user),
+):
     new_order = OrderModel(
         topic=data.topic,
         owner_id=user.id,
@@ -48,7 +48,7 @@ async def create_order(
     try:
         await db.commit()
     except Exception as e:
-        raise {"error", f"Fehler beim speichern des Auftrags {e}"}
+        raise {"error", f"Fehler beim speichern des Auftrags {e.message}"}
     finally:
         await db.close()
 
@@ -59,11 +59,10 @@ async def create_order(
 
 
 async def upload_images(file_upload: UploadFile):
-    # for file in files:
     global save_path
     try:
         data = await file_upload.read()
-        save_path = images_path+file_upload.filename
+        save_path = images_path + file_upload.filename
         with open(save_path, 'wb') as f:
             f.write(data)
     except Exception as e:
@@ -76,5 +75,24 @@ async def upload_images(file_upload: UploadFile):
 
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content={"message": f"Bild erfolgreich hochgeladen path: {save_path}"}
+        content={"message": f"File successfully uploaded to {save_path}"}
+    )
+
+
+async def upload_multiple_images(file_upload: List[UploadFile]):
+    for file in file_upload:
+        try:
+
+            data = await file.read()
+            save_path = images_path + file.filename
+            with open(save_path, 'wb') as f:
+                f.write(data)
+        except Exception:
+            return {"message": "There was an error uploading the file(s)"}
+        finally:
+            file.file.close()
+
+    return JSONResponse(
+        status_code=status.HTTP_200_OK,
+        content={"message": "Files successfully uploaded"}
     )
