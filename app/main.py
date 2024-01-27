@@ -13,7 +13,7 @@ from app.Schema.customeradressschema import CustomerAddressCreate
 from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
 from app.Services.adressservice import create_customer_address
-from app.Services.orderservice import create_order, upload_images
+from app.Services.orderservice import create_order, upload_images, upload_multiple_images
 from app.Services.userservice import get_all_customer
 
 app = FastAPI(
@@ -86,9 +86,9 @@ async def create_order_route(
 
 @app.post("/order/images/upload", tags=["Orders"])
 async def upload(
-        file_upload: UploadFile = File(...),
+        file_upload: List[UploadFile] = File(...),
 ):
-    return await upload_images(file_upload)
+    return await upload_multiple_images(file_upload)
 
 
 @app.on_event("startup")
