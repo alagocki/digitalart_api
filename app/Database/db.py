@@ -12,7 +12,7 @@ DATABASE_URL = "postgresql+asyncpg://digitalart:digitalart@db:5432/digitalart"
 
 # Base = declarative_base()
 
-engine = create_async_engine(DATABASE_URL)
+engine = create_async_engine(DATABASE_URL, echo=False)
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 

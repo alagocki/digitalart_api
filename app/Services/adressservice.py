@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 
 from app.Classes.users import active_user
 from app.Database.db import get_async_session
-from app.Model.customeraddressmodel import CustomerAddressModel
+from app.Model.customeradressmodel import CustomerAdressModel
 from app.Model.user import User
 from app.Schema.customeradressschema import CustomerAddressCreate
 
@@ -13,9 +13,8 @@ from app.Schema.customeradressschema import CustomerAddressCreate
 async def create_customer_address(
     data: CustomerAddressCreate,
     db: AsyncSession = Depends(get_async_session),
-    customer: User = Depends(active_user)
+    customer: User = Depends(active_user),
 ):
-
     # customer = await db.execute(select(User).where(User.customer == data.customernr))
     # customer_id_db = customer.first()[0].id
 
@@ -25,7 +24,7 @@ async def create_customer_address(
     #         detail=f"Kunde mit der Nummer {data.customernr} nicht gefunden",
     #     )
 
-    new_adress = CustomerAddressModel(
+    new_adress = CustomerAdressModel(
         forename=data.forename,
         lastname=data.lastname,
         street=data.street,

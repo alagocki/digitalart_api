@@ -14,8 +14,8 @@ class ImageSchema(BaseModel):
     name: str
     description: str
     status: Status
-    downloaded: bool
-    path: str
+    ordered: bool
+    base64encoded: str
 
     class Config:
         orm_mode = True
