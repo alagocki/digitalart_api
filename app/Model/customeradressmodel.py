@@ -8,8 +8,8 @@ from sqlalchemy.orm import relationship
 from app.Model.model import Base
 
 
-class CustomerAddressModel(Base):
-    __tablename__ = "addresses"
+class CustomerAdressModel(Base):
+    __tablename__ = "adresses"
 
     id = Column(
         UUID(as_uuid=True),
@@ -30,4 +30,4 @@ class CustomerAddressModel(Base):
     created = Column(DateTime, default=datetime.utcnow)
     customer_id = Column(ForeignKey("user.id"), index=True, nullable=False)
 
-    customer = relationship("User", foreign_keys="[CustomerAddressModel.customer_id]")
+    customer = relationship("User", foreign_keys="[CustomerAdressModel.customer_id]")

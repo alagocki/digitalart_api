@@ -1,6 +1,4 @@
-from typing import List
-
-from fastapi import Depends, FastAPI, UploadFile, File
+from fastapi import Depends, FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.cors import CORSMiddleware
@@ -13,8 +11,12 @@ from app.Schema.customeradressschema import CustomerAddressCreate
 from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
 from app.Services.adressservice import create_customer_address
-from app.Services.orderservice import create_order, upload_images, upload_multiple_images
-from app.Services.userservice import get_all_customer
+from app.Services.orderservice import (
+    create_order,
+    get_all_order,
+    get_single_order_by_id,
+)
+from app.Services.userservice import get_all_customer, get_single_userdata_by_id
 
 app = FastAPI(
     title="Andreas Lagocki | DigitalArt",
@@ -62,8 +64,19 @@ async def user_adress_route(
 
 
 @app.get("/user/all", tags=["User"])
-async def all_users_route(db: AsyncSession = Depends(get_async_session)):
+async def all_users_route(
+    db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
+):
     return await get_all_customer(db)
+
+
+@app.get(
+    "/user/single", tags=["User"], description="Returns all data from the current user"
+)
+async def user_data_route(
+    db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
+):
+    return await get_single_userdata_by_id(db, user)
 
 
 @app.get("/images/all", tags=["Images"])
@@ -84,11 +97,20 @@ async def create_order_route(
     return await create_order(data, db, user)
 
 
-@app.post("/order/images/upload", tags=["Orders"])
-async def upload(
-        file_upload: List[UploadFile] = File(...),
+@app.get("/order/all", tags=["Orders"])
+async def all_orders_route(
+    db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
 ):
-    return await upload_multiple_images(file_upload)
+    return await get_all_order(db)
+
+
+@app.get("/order/{order_id}", tags=["Orders"])
+async def all_orders_route(
+    order_id: str,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+):
+    return await get_single_order_by_id(db, order_id)
 
 
 @app.on_event("startup")

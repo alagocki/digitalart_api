@@ -20,10 +20,12 @@ class OrderModel(Base):
         unique=True,
     )
     topic = Column(String(100), index=True, nullable=False)
+    order_number = Column(String(100), index=True, nullable=False)
     owner_id = Column(ForeignKey("user.id"), index=True, nullable=False)
     customer_id = Column(ForeignKey("user.id"), index=True, nullable=False)
     info = Column(String(500), nullable=True)
     status = Column(String(20), nullable=False)
+    shooting_date = Column(DateTime, nullable=True)
     created = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", foreign_keys="[OrderModel.owner_id]")

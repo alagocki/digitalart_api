@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, SmallInteger, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -23,8 +23,8 @@ class ImageModel(Base):
     order_id = Column(ForeignKey("orders.id"), index=True, nullable=False)
     description = Column(String(500), nullable=True)
     status = Column(String(20), nullable=False)
-    downloaded = Column(SmallInteger, nullable=False)
-    path = Column(String(255), nullable=False)
+    ordered = Column(Boolean, nullable=False)
+    base64encoded = Column(Text, nullable=True)
     upload = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     orders = relationship("OrderModel", back_populates="images")

@@ -1,34 +1,35 @@
-from os.path import abspath
-from pathlib import Path
-from typing import List
+from os.path import abspath, dirname, join
 
-from anyio.streams import file
-from fastapi import Depends, status, UploadFile, File
+from fastapi import Depends, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.functions import count
 from starlette.responses import JSONResponse
 
 from app.Classes.users import active_user
 from app.Database.db import get_async_session
+from app.Model.customeradressmodel import CustomerAdressModel
 from app.Model.imagemodel import ImageModel
 from app.Model.ordermodel import OrderModel
 from app.Model.user import User
 from app.Schema.orderschema import OrderCreate
-
-from os.path import dirname, abspath, join
+from app.Services.imageservice import get_images_by_order
 
 dirname = dirname(dirname(abspath(__file__)))
-images_path = join(dirname, 'CustomerFiles/')
+images_path = join(dirname, "CustomerFiles/")
 
 
 async def create_order(
-        data: OrderCreate,
-        db: AsyncSession = Depends(get_async_session),
-        user: User = Depends(active_user),
+    data: OrderCreate,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
 ):
     new_order = OrderModel(
         topic=data.topic,
         owner_id=user.id,
         customer_id=data.customer_id,
+        order_number=data.order_number,
+        shooting_date=data.shooting_date,
         info=data.info,
         status=data.status,
     )
@@ -40,15 +41,16 @@ async def create_order(
             orders=new_order,
             description=image.description,
             status="unbearbeitet",
-            downloaded=image.downloaded,
-            path=image.path,
+            ordered=image.ordered,
+            base64encoded=image.base64encoded,
         )
         db.add(new_image)
 
     try:
         await db.commit()
     except Exception as e:
-        raise {"error", f"Fehler beim speichern des Auftrags {e.message}"}
+        print(e)
+        raise {"error", f"Fehler beim speichern des Auftrags {e}"}
     finally:
         await db.close()
 
@@ -58,41 +60,71 @@ async def create_order(
     )
 
 
-async def upload_images(file_upload: UploadFile):
-    global save_path
-    try:
-        data = await file_upload.read()
-        save_path = images_path + file_upload.filename
-        with open(save_path, 'wb') as f:
-            f.write(data)
-    except Exception as e:
-        return JSONResponse(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            content={"message": Exception}
+async def get_all_order(
+    db: AsyncSession = Depends(get_async_session),
+):
+    orders: [OrderModel] = await db.execute(
+        select(
+            OrderModel.id,
+            OrderModel.topic,
+            OrderModel.status,
+            OrderModel.info,
+            OrderModel.order_number,
+            OrderModel.shooting_date,
+            CustomerAdressModel.forename,
+            CustomerAdressModel.lastname,
+            count(ImageModel.id).label("image_count"),
         )
-    # finally:
-    # file_upload.close()
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={"message": f"File successfully uploaded to {save_path}"}
+        .group_by(
+            OrderModel.id,
+            OrderModel.topic,
+            OrderModel.status,
+            OrderModel.info,
+            OrderModel.order_number,
+            CustomerAdressModel.forename,
+            CustomerAdressModel.lastname,
+        )
+        .join(User, onclause=OrderModel.customer_id == User.id)
+        .join(
+            CustomerAdressModel,
+            onclause=OrderModel.customer_id == CustomerAdressModel.customer_id,
+        )
+        .join(ImageModel, onclause=ImageModel.order_id == OrderModel.id)
+        .where(User.customer is not None)
+        .where(User.is_verified == True)
     )
+    results = [{row} for row in orders]
+
+    return {"data": results}
 
 
-async def upload_multiple_images(file_upload: List[UploadFile]):
-    for file in file_upload:
-        try:
-
-            data = await file.read()
-            save_path = images_path + file.filename
-            with open(save_path, 'wb') as f:
-                f.write(data)
-        except Exception:
-            return {"message": "There was an error uploading the file(s)"}
-        finally:
-            file.file.close()
-
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={"message": "Files successfully uploaded"}
+async def get_single_order_by_id(
+    db: AsyncSession = Depends(get_async_session),
+    order_id: str = None,
+):
+    order: [OrderModel] = await db.execute(
+        select(
+            OrderModel.id,
+            OrderModel.topic,
+            OrderModel.status,
+            OrderModel.info,
+            OrderModel.order_number,
+            OrderModel.shooting_date,
+            CustomerAdressModel.forename,
+            CustomerAdressModel.lastname,
+        )
+        .join(User, onclause=OrderModel.customer_id == User.id)
+        .join(
+            CustomerAdressModel,
+            onclause=OrderModel.customer_id == CustomerAdressModel.customer_id,
+        )
+        .where(User.customer is not None)
+        .where(User.is_verified == True)
+        .where(OrderModel.id == order_id)
     )
+    result = order.all()
+
+    images = await get_images_by_order(db, order_id)
+    result.append(images)
+
+    return {"order": result}

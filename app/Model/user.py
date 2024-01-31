@@ -9,4 +9,4 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     customer = Column(Integer(), default=0, nullable=True, autoincrement=True)
 
     # orders = relationship("OrderModel", backref="owner")
-    # address = relationship("CustomerAddressModel", back_populates="customer")
+    # address = relationship("CustomerAdressModel", back_populates="customer")

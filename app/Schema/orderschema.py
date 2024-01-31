@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel
@@ -18,6 +19,8 @@ class OrderSchema(BaseModel):
     info: str
     customer_id: str
     status: str
+    order_number: str
+    shooting_date: datetime
     images: List[ImageSchema]
 
     class Config:
