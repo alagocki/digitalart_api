@@ -20,6 +20,8 @@ class OrderSchema(BaseModel):
     customer_id: str
     status: str
     order_number: str
+    price: float
+    condition: str
     shooting_date: datetime
     images: List[ImageSchema]
 
