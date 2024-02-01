@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String, Text, Float
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -26,6 +26,8 @@ class OrderModel(Base):
     info = Column(String(500), nullable=True)
     status = Column(String(20), nullable=False)
     shooting_date = Column(DateTime, nullable=True)
+    price = Column(Float, nullable=False)
+    condition = Column(Text, nullable=True)
     created = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", foreign_keys="[OrderModel.owner_id]")

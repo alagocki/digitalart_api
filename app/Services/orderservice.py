@@ -32,6 +32,8 @@ async def create_order(
         shooting_date=data.shooting_date,
         info=data.info,
         status=data.status,
+        price=data.price,
+        condition=data.condition,
     )
     db.add(new_order)
 
@@ -110,6 +112,8 @@ async def get_single_order_by_id(
             OrderModel.info,
             OrderModel.order_number,
             OrderModel.shooting_date,
+            OrderModel.price,
+            OrderModel.condition,
             CustomerAdressModel.forename,
             CustomerAdressModel.lastname,
         )
