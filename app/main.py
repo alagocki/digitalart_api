@@ -11,10 +11,12 @@ from app.Schema.customeradressschema import CustomerAddressCreate
 from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
 from app.Services.adressservice import create_customer_address
+from app.Services.imageservice import create_images
 from app.Services.orderservice import (
     create_order,
     get_all_order,
     get_single_order_by_id,
+    update_order_images,
 )
 from app.Services.userservice import get_all_customer, get_single_userdata_by_id
 
@@ -95,6 +97,16 @@ async def create_order_route(
     user: User = Depends(active_user),
 ):
     return await create_order(data, db, user)
+
+
+@app.post("/order/images/{order_id}", tags=["Orders"])
+async def create_order_images(
+    data: OrderCreate,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+    order_id: str = None,
+):
+    return await update_order_images(data, db, user, order_id)
 
 
 @app.get("/order/all", tags=["Orders"])

@@ -23,7 +23,8 @@ class OrderSchema(BaseModel):
     price: float
     condition: str
     shooting_date: datetime
-    images: List[ImageSchema]
+    images_cnt: int
+    images: List[ImageSchema] if List[ImageSchema] else None
 
     class Config:
         orm_mode = True
