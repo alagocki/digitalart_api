@@ -20,10 +20,12 @@ class OrderSchema(BaseModel):
     customer_id: str
     status: str
     order_number: str
-    price: float
+    basic_price: float
+    additional_pic: float
     condition: str
     shooting_date: datetime
     images_cnt: int
+    include_media: int
     images: List[ImageSchema] if List[ImageSchema] else None
 
     class Config:

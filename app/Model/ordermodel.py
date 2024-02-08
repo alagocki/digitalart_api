@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy import (Column, DateTime, Float, ForeignKey, Integer, String,
+                        Text)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -26,7 +27,9 @@ class OrderModel(Base):
     info = Column(String(500), nullable=True)
     status = Column(String(20), nullable=False)
     shooting_date = Column(DateTime, nullable=True)
-    price = Column(Float, nullable=True)
+    basic_price = Column(Float, nullable=True)
+    additional_pic = Column(Float, nullable=True)
+    include_media = Column(Integer, nullable=True)
     condition = Column(Text, nullable=True)
     images_cnt = Column(Integer, nullable=True)
     created = Column(DateTime, default=datetime.utcnow)

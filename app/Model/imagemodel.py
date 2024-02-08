@@ -26,5 +26,6 @@ class ImageModel(Base):
     ordered = Column(Boolean, nullable=False)
     base64encoded = Column(Text, nullable=True)
     upload = Column(DateTime, default=datetime.utcnow, nullable=False)
+    blocked = Column(Boolean, default=False, nullable=False)
 
     orders = relationship("OrderModel", back_populates="images")

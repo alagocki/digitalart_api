@@ -8,11 +8,10 @@ from starlette.responses import JSONResponse
 from app.Classes.users import active_user
 from app.Database.db import get_async_session
 from app.Model.customeradressmodel import CustomerAdressModel
-from app.Model.imagemodel import ImageModel
 from app.Model.ordermodel import OrderModel
 from app.Model.user import User
 from app.Schema.orderschema import OrderCreate
-from app.Services.imageservice import create_images, get_images_by_order
+from app.Services.imageservice import create_images, get_images_by_order, count_images_order
 
 dirname = dirname(dirname(abspath(__file__)))
 images_path = join(dirname, "CustomerFiles/")
@@ -31,9 +30,11 @@ async def create_order(
         shooting_date=data.shooting_date,
         info=data.info,
         status=data.status,
-        price=data.price,
+        basic_price=data.basic_price,
+        additional_pic=data.additional_pic,
         condition=data.condition,
         images_cnt=data.images_cnt,
+        include_media=data.include_media,
     )
     db.add(new_order)
 
@@ -59,7 +60,7 @@ async def create_order(
     )
 
 
-async def update_order_images(
+async def update_order_data(
     data: OrderCreate,
     db: AsyncSession = Depends(get_async_session),
     user: User = Depends(active_user),
@@ -90,6 +91,31 @@ async def update_order_images(
     )
 
 
+async def update_order_data_images_delete(
+    order_id: str,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+):
+    order = await db.execute(select(OrderModel).where(OrderModel.id == order_id))
+    order = order.scalar_one()
+
+    img_cnt = await count_images_order(order_id, db)
+    setattr(order, "images_cnt", list(img_cnt)[0]) if img_cnt else None
+
+    try:
+        await db.commit()
+    except Exception as e:
+        print(e)
+        raise {"error", f"Error when saving the order {e}"}
+    finally:
+        await db.close()
+
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"message": "Imagedata successfully updated"},
+    )
+
+
 async def get_all_order(
     db: AsyncSession = Depends(get_async_session),
 ):
@@ -103,6 +129,9 @@ async def get_all_order(
             OrderModel.order_number,
             OrderModel.shooting_date,
             OrderModel.images_cnt,
+            OrderModel.additional_pic,
+            OrderModel.images_cnt,
+            OrderModel.basic_price,
             CustomerAdressModel.forename,
             CustomerAdressModel.lastname,
         )
@@ -140,9 +169,11 @@ async def get_single_order_by_id(
             OrderModel.info,
             OrderModel.order_number,
             OrderModel.shooting_date,
-            OrderModel.price,
+            OrderModel.basic_price,
             OrderModel.condition,
             OrderModel.customer_id,
+            OrderModel.images_cnt,
+            OrderModel.additional_pic,
             CustomerAdressModel.forename,
             CustomerAdressModel.lastname,
         )
