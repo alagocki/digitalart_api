@@ -15,6 +15,7 @@ class ImageSchema(BaseModel):
     status: Status
     ordered: bool
     base64encoded: str
+    blocked: bool
 
     class Config:
         orm_mode = True
