@@ -21,7 +21,7 @@ class OrderSchema(BaseModel):
     status: str
     order_number: str
     basic_price: float
-    additional_pic: float
+    additional_pic_price: float
     condition: str
     shooting_date: datetime
     images_cnt: int

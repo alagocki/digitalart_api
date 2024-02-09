@@ -28,7 +28,7 @@ class OrderModel(Base):
     status = Column(String(20), nullable=False)
     shooting_date = Column(DateTime, nullable=True)
     basic_price = Column(Float, nullable=True)
-    additional_pic = Column(Float, nullable=True)
+    additional_pic_price = Column(Float, nullable=True)
     include_media = Column(Integer, nullable=True)
     condition = Column(Text, nullable=True)
     images_cnt = Column(Integer, nullable=True)
