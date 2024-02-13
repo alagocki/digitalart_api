@@ -12,7 +12,7 @@ class Status(Enum):
 class ImageSchema(BaseModel):
     name: str
     description: str
-    status: Status
+    status: str
     ordered: bool
     base64encoded: str
     blocked: bool

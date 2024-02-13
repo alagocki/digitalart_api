@@ -33,6 +33,7 @@ async def get_images_by_order(
             ImageModel.base64encoded,
             ImageModel.blocked
         ).where(ImageModel.order_id == order_id)
+        .order_by(ImageModel.upload)
     )
     results = [{row} for row in images]
 
@@ -66,6 +67,7 @@ async def create_images(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"message": "Order not found"},
         )
+
     for image in images:
         new_image = ImageModel(
             name=image.name,
@@ -92,11 +94,65 @@ async def create_images(
     )
 
 
+async def create_image(
+        image: ImageSchema,
+        db: AsyncSession = Depends(get_async_session),
+        order_id: str = None,
+):
+    order = await db.execute(select(OrderModel).where(OrderModel.id == order_id))
+    order = order.scalar_one()
+
+    if not order:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Order not found"},
+        )
+
+    new_image = ImageModel(
+        name=image.name,
+        orders=order,
+        description=image.description,
+        status="unbearbeitet",
+        ordered=image.ordered,
+        base64encoded=image.base64encoded,
+        blocked=image.blocked
+    )
+    db.add(new_image)
+
+    try:
+        await db.commit()
+    except Exception as e:
+        print(e)
+        raise {"error", f"Error when saving the order {e}"}
+    finally:
+        await db.close()
+
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={"message": "Order successfully created"},
+    )
+
+
+async def get_order(
+        order_id: str,
+        db: AsyncSession = Depends(get_async_session)
+):
+    order = await db.execute(select(OrderModel).where(OrderModel.id == order_id))
+    order = order.scalar_one()
+
+    if not order:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": "Order not found"},
+        )
+
+    return order
+
+
 async def delete_image(
         image_id: str,
         db: AsyncSession = Depends(get_async_session)
 ):
-
     image = await db.execute(select(ImageModel).where(ImageModel.id == image_id))
     image = image.scalar_one()
 

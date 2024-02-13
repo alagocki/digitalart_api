@@ -8,19 +8,20 @@ from starlette.responses import JSONResponse
 from app.Classes.users import active_user
 from app.Database.db import get_async_session
 from app.Model.customeradressmodel import CustomerAdressModel
+from app.Model.imagemodel import ImageModel
 from app.Model.ordermodel import OrderModel
 from app.Model.user import User
 from app.Schema.orderschema import OrderCreate
-from app.Services.imageservice import create_images, get_images_by_order, count_images_order
+from app.Services.imageservice import create_images, get_images_by_order, count_images_order, create_image
 
 dirname = dirname(dirname(abspath(__file__)))
 images_path = join(dirname, "CustomerFiles/")
 
 
 async def create_order(
-    data: OrderCreate,
-    db: AsyncSession = Depends(get_async_session),
-    user: User = Depends(active_user),
+        data: OrderCreate,
+        db: AsyncSession = Depends(get_async_session),
+        user: User = Depends(active_user),
 ):
     new_order = OrderModel(
         topic=data.topic,
@@ -61,21 +62,30 @@ async def create_order(
 
 
 async def update_order_data(
-    data: OrderCreate,
-    db: AsyncSession = Depends(get_async_session),
-    user: User = Depends(active_user),
-    order_id: str = None,
+        data: OrderCreate,
+        db: AsyncSession = Depends(get_async_session),
+        user: User = Depends(active_user),
+        order_id: str = None,
 ):
-    order = await db.execute(select(OrderModel).where(OrderModel.id == order_id))
-    order = order.scalar_one()
+    order_query = await db.execute(select(OrderModel).where(OrderModel.id == order_id))
+    order = order_query.scalar_one()
 
-    exist_image_cnt = order.images_cnt if order.images_cnt else 0
+    # exist_image_cnt = order.images_cnt if order.images_cnt else 0
     for key, value in data.dict().items():
         if key == "images_cnt":
-            setattr(order, key, exist_image_cnt + value) if value else None
+            setattr(order, key, value) if value else None
 
     if data.images is not None:
-        await create_images(data.images, db, user, order_id)
+
+        for image in data.images:
+            image_in_db_query = await db.execute(
+                select(ImageModel).where(ImageModel.name == image.name and ImageModel.order_id == order_id))
+            image_in_db = image_in_db_query.scalar_one_or_none()
+            if image_in_db:
+                for key, value in image.dict().items():
+                    setattr(image_in_db, key, value)
+            else:
+                await create_image(image, db, order_id)
 
     try:
         await db.commit()
@@ -92,9 +102,9 @@ async def update_order_data(
 
 
 async def update_order_data_images_delete(
-    order_id: str,
-    db: AsyncSession = Depends(get_async_session),
-    user: User = Depends(active_user),
+        order_id: str,
+        db: AsyncSession = Depends(get_async_session),
+        user: User = Depends(active_user),
 ):
     order = await db.execute(select(OrderModel).where(OrderModel.id == order_id))
     order = order.scalar_one()
@@ -117,7 +127,7 @@ async def update_order_data_images_delete(
 
 
 async def get_all_order(
-    db: AsyncSession = Depends(get_async_session),
+        db: AsyncSession = Depends(get_async_session),
 ):
     global images_cnt
     orders: [OrderModel] = await db.execute(
@@ -158,8 +168,8 @@ async def get_all_order(
 
 
 async def get_single_order_by_id(
-    db: AsyncSession = Depends(get_async_session),
-    order_id: str = None,
+        db: AsyncSession = Depends(get_async_session),
+        order_id: str = None,
 ):
     order: [OrderModel] = await db.execute(
         select(
