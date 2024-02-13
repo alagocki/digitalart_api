@@ -25,7 +25,7 @@ class OrderModel(Base):
     owner_id = Column(ForeignKey("user.id"), index=True, nullable=False)
     customer_id = Column(ForeignKey("user.id"), index=True, nullable=False)
     info = Column(String(500), nullable=True)
-    status = Column(String(20), nullable=False)
+    status = Column(Text, nullable=False)
     shooting_date = Column(DateTime, nullable=True)
     basic_price = Column(Float, nullable=True)
     additional_pic_price = Column(Float, nullable=True)

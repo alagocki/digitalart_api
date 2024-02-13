@@ -18,7 +18,7 @@ class OrderSchema(BaseModel):
     topic: str
     info: str
     customer_id: str
-    status: str
+    status: Status
     order_number: str
     basic_price: float
     additional_pic_price: float

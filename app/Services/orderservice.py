@@ -30,7 +30,7 @@ async def create_order(
         order_number=data.order_number,
         shooting_date=data.shooting_date,
         info=data.info,
-        status=data.status,
+        status=str(data.status),
         basic_price=data.basic_price,
         additional_pic_price=data.additional_pic_price,
         condition=data.condition,

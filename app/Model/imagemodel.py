@@ -22,7 +22,7 @@ class ImageModel(Base):
     name = Column(String(128), index=True, nullable=False)
     order_id = Column(ForeignKey("orders.id"), index=True, nullable=False)
     description = Column(String(500), nullable=True)
-    status = Column(String(20), nullable=False)
+    status = Column(Text, nullable=False)
     ordered = Column(Boolean, nullable=False)
     base64encoded = Column(Text, nullable=True)
     upload = Column(DateTime, default=datetime.utcnow, nullable=False)
