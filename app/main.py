@@ -44,16 +44,6 @@ app.add_middleware(
 )
 
 
-@app.get("/user/images", tags=["User"])
-async def user_images_route(user: User = Depends(active_user)):
-    return {"message", f"Alle Bilder von {user.username} mit {user.email}"}
-
-
-@app.get("/user/images/{image_id}", tags=["User"])
-async def user_image_route(image_id: int, user: User = Depends(active_user)):
-    return {"message", f"Bild {image_id} von {user.username} mit {user.email}"}
-
-
 @app.get("/images/all", tags=["Images"])
 async def all_images_route(db: AsyncSession = Depends(get_async_session)):
     images: [ImageModel] = await db.execute(
@@ -73,6 +63,16 @@ async def delete_image_route(
     await delete_image(image_id, db)
     await update_order_data_images_delete(order_id, db, user)
     return {"message": f"Image {image_id} deleted from order successfully"}
+
+
+@app.get("/user/images", tags=["User"])
+async def user_images_route(user: User = Depends(active_user)):
+    return {"message", f"Alle Bilder von {user.username} mit {user.email}"}
+
+
+@app.get("/user/images/{image_id}", tags=["User"])
+async def user_image_route(image_id: int, user: User = Depends(active_user)):
+    return {"message", f"Bild {image_id} von {user.username} mit {user.email}"}
 
 
 @app.post("/user/adress", tags=["User"])
