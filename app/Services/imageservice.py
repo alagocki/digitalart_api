@@ -73,7 +73,7 @@ async def create_images(
             name=image.name,
             orders=order,
             description=image.description,
-            status="unbearbeitet",
+            status=str("unbearbeitet"),
             ordered=image.ordered,
             base64encoded=image.base64encoded,
             blocked=image.blocked
@@ -112,7 +112,7 @@ async def create_image(
         name=image.name,
         orders=order,
         description=image.description,
-        status="unbearbeitet",
+        status=str("unbearbeitet"),
         ordered=image.ordered,
         base64encoded=image.base64encoded,
         blocked=image.blocked
