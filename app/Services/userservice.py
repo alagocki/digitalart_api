@@ -42,6 +42,7 @@ async def get_single_userdata_by_id(
 ):
     userdata: [User] = await db.execute(
         select(
+            User.id,
             User.email,
             User.customer,
             CustomerAdressModel.forename,

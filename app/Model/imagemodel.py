@@ -25,6 +25,7 @@ class ImageModel(Base):
     status = Column(Text, nullable=False)
     ordered = Column(Boolean, nullable=False)
     base64encoded = Column(Text, nullable=True)
+    file_extension = Column(String(25), nullable=True)
     upload = Column(DateTime, default=datetime.utcnow, nullable=False)
     blocked = Column(Boolean, default=False, nullable=False)
 

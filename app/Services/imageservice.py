@@ -12,8 +12,7 @@ from app.Database.db import get_async_session
 from app.Model.imagemodel import ImageModel
 from app.Model.ordermodel import OrderModel
 from app.Model.user import User
-from app.Schema.imageschema import ImageCreate, ImageSchema
-from app.Schema.orderschema import OrderCreate
+from app.Schema.imageschema import ImageSchema
 
 dirname = dirname(dirname(abspath(__file__)))
 images_path = join(dirname, "CustomerFiles/")
@@ -31,7 +30,8 @@ async def get_images_by_order(
             ImageModel.status,
             ImageModel.ordered,
             ImageModel.base64encoded,
-            ImageModel.blocked
+            ImageModel.blocked,
+            ImageModel.file_extension
         ).where(ImageModel.order_id == order_id)
         .order_by(ImageModel.upload)
     )
@@ -76,7 +76,8 @@ async def create_images(
             status=str("unbearbeitet"),
             ordered=image.ordered,
             base64encoded=image.base64encoded,
-            blocked=image.blocked
+            blocked=image.blocked,
+            file_extension=image.file_extension
         )
         db.add(new_image)
 
@@ -115,7 +116,8 @@ async def create_image(
         status=str("unbearbeitet"),
         ordered=image.ordered,
         base64encoded=image.base64encoded,
-        blocked=image.blocked
+        blocked=image.blocked,
+        file_extension=image.file_extension
     )
     db.add(new_image)
 

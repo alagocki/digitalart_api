@@ -18,7 +18,7 @@ class OrderSchema(BaseModel):
     topic: str
     info: str
     customer_id: str
-    status: Status
+    status: str
     order_number: str
     basic_price: float
     additional_pic_price: float
@@ -26,7 +26,7 @@ class OrderSchema(BaseModel):
     shooting_date: datetime
     images_cnt: int
     include_media: int
-    images: List[ImageSchema] if List[ImageSchema] else None
+    # images: List[ImageSchema] if List[ImageSchema] else None
 
     class Config:
         orm_mode = True

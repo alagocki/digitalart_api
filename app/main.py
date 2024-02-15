@@ -14,7 +14,8 @@ from app.Services.adressservice import create_customer_address
 from app.Services.imageservice import delete_image
 from app.Services.orderservice import (create_order, get_all_order,
                                        get_single_order_by_id,
-                                       update_order_data, update_order_data_images_delete)
+                                       update_order_data, update_order_data_images_delete,
+                                       get_orders_by_user_id)
 from app.Services.userservice import (get_all_customer,
                                       get_single_userdata_by_id)
 
@@ -133,6 +134,15 @@ async def all_orders_route(
         user: User = Depends(active_user),
 ):
     return await get_single_order_by_id(db, order_id)
+
+
+@app.get("/order/user/{user_id}", tags=["Orders"])
+async def all_orders_by_user_route(
+        user_id: str,
+        db: AsyncSession = Depends(get_async_session),
+        user: User = Depends(active_user),
+):
+    return await get_orders_by_user_id(db, user_id)
 
 
 @app.on_event("startup")

@@ -39,13 +39,13 @@ async def create_order(
     )
     db.add(new_order)
 
-    if data.images is not None:
-        lastOrder = await db.execute(
-            select(OrderModel).where(OrderModel.order_number == data.order_number)
-        )
-        lastOrderData = lastOrder.scalar_one()
-
-        await create_images(data.images, db, user, lastOrderData.id)
+    # if data.images is not None:
+    #     lastOrder = await db.execute(
+    #         select(OrderModel).where(OrderModel.order_number == data.order_number)
+    #     )
+    #     lastOrderData = lastOrder.scalar_one()
+    #
+    #     await create_images(data.images, db, user, lastOrderData.id)
 
     try:
         await db.commit()
@@ -74,18 +74,28 @@ async def update_order_data(
     for key, value in data.dict().items():
         if key == "images_cnt":
             setattr(order, key, value) if value else None
-
-    if data.images is not None:
-
-        for image in data.images:
-            image_in_db_query = await db.execute(
-                select(ImageModel).where(ImageModel.name == image.name and ImageModel.order_id == order_id))
-            image_in_db = image_in_db_query.scalar_one_or_none()
-            if image_in_db:
-                for key, value in image.dict().items():
-                    setattr(image_in_db, key, value)
-            else:
-                await create_image(image, db, order_id)
+    #
+    # if data.images is not None:
+    #
+    #     for image in data.images:
+    #         image_in_db_query = await db.execute(
+    #             select(ImageModel).where(ImageModel.name == image.name).where(ImageModel.order_id == order_id))
+    #         image_in_db = image_in_db_query.scalar_one_or_none()
+    #
+    #         if image_in_db:
+    #             for key, value in image.dict().items():
+    #                 if key != "status":
+    #                     value = str(value)
+    #                 if key == "ordered" or key == "blocked":
+    #                     if value == "True":
+    #                         value = True
+    #                     if value == "False":
+    #                         value = False
+    #
+    #                 setattr(image_in_db, key, value)
+    #
+    #         else:
+    #             await create_image(image, db, order_id)
 
     try:
         await db.commit()
@@ -161,6 +171,49 @@ async def get_all_order(
         )
         .where(User.customer is not None)
         .where(User.is_verified == True)
+    )
+
+    results = [{row} for row in orders]
+    return {"data": results}
+
+
+async def get_orders_by_user_id(
+        db: AsyncSession = Depends(get_async_session),
+        user_id: str = None,
+):
+
+    orders: [OrderModel] = await db.execute(
+        select(
+            OrderModel.id,
+            OrderModel.topic,
+            OrderModel.status,
+            OrderModel.info,
+            OrderModel.order_number,
+            OrderModel.shooting_date,
+            OrderModel.images_cnt,
+            OrderModel.additional_pic_price,
+            OrderModel.basic_price,
+            OrderModel.include_media,
+            CustomerAdressModel.forename,
+            CustomerAdressModel.lastname,
+        )
+        .group_by(
+            OrderModel.id,
+            OrderModel.topic,
+            OrderModel.status,
+            OrderModel.info,
+            OrderModel.order_number,
+            CustomerAdressModel.forename,
+            CustomerAdressModel.lastname,
+        )
+        .join(User, onclause=OrderModel.customer_id == User.id)
+        .join(
+            CustomerAdressModel,
+            onclause=OrderModel.customer_id == CustomerAdressModel.customer_id,
+        )
+        .where(User.customer is not None)
+        .where(User.is_verified == True)
+        .where(OrderModel.customer_id == user_id)
     )
 
     results = [{row} for row in orders]
