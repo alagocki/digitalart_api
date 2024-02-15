@@ -26,7 +26,6 @@ class OrderSchema(BaseModel):
     shooting_date: datetime
     images_cnt: int
     include_media: int
-    images: List[ImageSchema] if List[ImageSchema] else None
 
     class Config:
         orm_mode = True

@@ -39,14 +39,6 @@ async def create_order(
     )
     db.add(new_order)
 
-    if data.images is not None:
-        lastOrder = await db.execute(
-            select(OrderModel).where(OrderModel.order_number == data.order_number)
-        )
-        lastOrderData = lastOrder.scalar_one()
-
-        await create_images(data.images, db, user, lastOrderData.id)
-
     try:
         await db.commit()
     except Exception as e:

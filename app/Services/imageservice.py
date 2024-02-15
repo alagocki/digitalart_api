@@ -84,7 +84,7 @@ async def create_images(
         await db.commit()
     except Exception as e:
         print(e)
-        raise {"error", f"Error when saving the order {e}"}
+        raise {"error", f"Error when saving the image {e}"}
     finally:
         await db.close()
 
