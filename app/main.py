@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI
+import json
+
+from fastapi import Body, Depends, FastAPI
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.middleware.cors import CORSMiddleware
@@ -8,15 +10,22 @@ from app.Database.db import create_db_and_tables, get_async_session
 from app.Model.imagemodel import ImageModel
 from app.Model.user import User
 from app.Schema.customeradressschema import CustomerAddressCreate
+from app.Schema.imageschema import ImageSchema, ImageUploadData
 from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
 from app.Services.adressservice import create_customer_address
-from app.Services.imageservice import delete_image
-from app.Services.orderservice import (create_order, get_all_order,
-                                       get_single_order_by_id,
-                                       update_order_data, update_order_data_images_delete)
-from app.Services.userservice import (get_all_customer,
-                                      get_single_userdata_by_id)
+from app.Services.imageservice import (
+    create_images,
+    delete_image
+)
+from app.Services.orderservice import (
+    create_order,
+    get_all_order,
+    get_orders_by_user_id,
+    get_single_order_by_id,
+    update_order_data_images_delete,
+)
+from app.Services.userservice import get_all_customer, get_single_userdata_by_id
 
 app = FastAPI(
     title="Andreas Lagocki | DigitalArt",
@@ -53,12 +62,22 @@ async def all_images_route(db: AsyncSession = Depends(get_async_session)):
     return {"images": results}
 
 
+@app.post("/images/create", tags=["Images"])
+async def create_images_route(
+    images: ImageUploadData,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+):
+    jsonData = json.loads(images.data)
+    await create_images(jsonData, db)
+
+
 @app.delete("/image/delete/{image_id}/{order_id}", tags=["Images"])
 async def delete_image_route(
-        image_id: str,
-        order_id: str,
-        db: AsyncSession = Depends(get_async_session),
-        user: User = Depends(active_user),
+    image_id: str,
+    order_id: str,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
 ):
     await delete_image(image_id, db)
     await update_order_data_images_delete(order_id, db, user)
@@ -77,16 +96,16 @@ async def user_image_route(image_id: int, user: User = Depends(active_user)):
 
 @app.post("/user/adress", tags=["User"])
 async def user_adress_route(
-        data: CustomerAddressCreate,
-        db: AsyncSession = Depends(get_async_session),
-        user: User = Depends(active_user),
+    data: CustomerAddressCreate,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
 ):
     return await create_customer_address(data, db, user)
 
 
 @app.get("/user/all", tags=["User"])
 async def all_users_route(
-        db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
+    db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
 ):
     return await get_all_customer(db)
 
@@ -95,44 +114,54 @@ async def all_users_route(
     "/user/single", tags=["User"], description="Returns all data from the current user"
 )
 async def user_data_route(
-        db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
+    db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
 ):
     return await get_single_userdata_by_id(db, user)
 
 
 @app.post("/order/create", tags=["Orders"])
 async def create_order_route(
-        data: OrderCreate,
-        db: AsyncSession = Depends(get_async_session),
-        user: User = Depends(active_user),
+    data: OrderCreate,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
 ):
     return await create_order(data, db, user)
 
 
 @app.post("/order/update/{order_id}", tags=["Orders"])
 async def update_order(
-        data: OrderCreate,
-        db: AsyncSession = Depends(get_async_session),
-        user: User = Depends(active_user),
-        order_id: str = None,
+    data: OrderCreate,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+    order_id: str = None,
 ):
-    return await update_order_data(data, db, user, order_id)
+    pass
+    # return await update_order_data(data, db, user, order_id)
 
 
 @app.get("/order/all", tags=["Orders"])
 async def all_orders_route(
-        db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
+    db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
 ):
     return await get_all_order(db)
 
 
 @app.get("/order/{order_id}", tags=["Orders"])
 async def all_orders_route(
-        order_id: str,
-        db: AsyncSession = Depends(get_async_session),
-        user: User = Depends(active_user),
+    order_id: str,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
 ):
     return await get_single_order_by_id(db, order_id)
+
+
+@app.get("/order/user/{user_id}", tags=["Orders"])
+async def all_orders_by_user_route(
+    user_id: str,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+):
+    return await get_orders_by_user_id(db, user_id)
 
 
 @app.on_event("startup")
