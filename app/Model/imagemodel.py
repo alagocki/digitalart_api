@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.Model.model import Base
+from app.Model.relation_image_order import image_order
 
 
 class ImageModel(Base):
@@ -20,7 +21,6 @@ class ImageModel(Base):
         unique=True,
     )
     name = Column(String(128), index=True, nullable=False)
-    order_id = Column(ForeignKey("orders.id"), index=True, nullable=False)
     description = Column(String(500), nullable=True)
     status = Column(Text, nullable=False)
     ordered = Column(Boolean, nullable=False)
@@ -28,4 +28,4 @@ class ImageModel(Base):
     upload = Column(DateTime, default=datetime.utcnow, nullable=False)
     blocked = Column(Boolean, default=False, nullable=False)
 
-    orders = relationship("OrderModel", back_populates="images")
+    orders = relationship("OrderModel", secondary=image_order, back_populates="images")

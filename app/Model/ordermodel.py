@@ -1,12 +1,12 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import (Column, DateTime, Float, ForeignKey, Integer, String,
-                        Text)
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from app.Model.model import Base
+from app.Model.relation_image_order import image_order
 
 
 class OrderModel(Base):
@@ -36,4 +36,4 @@ class OrderModel(Base):
 
     owner = relationship("User", foreign_keys="[OrderModel.owner_id]")
     customer = relationship("User", foreign_keys="[OrderModel.customer_id]")
-    images = relationship("ImageModel", back_populates="orders")
+    images = relationship("ImageModel", secondary=image_order, back_populates="orders")

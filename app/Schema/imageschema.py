@@ -31,3 +31,7 @@ class ImageRead(ImageSchema):
 
 class ImageUpdate(ImageSchema):
     pass
+
+
+class ImageUploadData(BaseModel):
+    data: str
