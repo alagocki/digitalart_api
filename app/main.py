@@ -10,17 +10,15 @@ from app.Database.db import create_db_and_tables, get_async_session
 from app.Model.imagemodel import ImageModel
 from app.Model.user import User
 from app.Schema.customeradressschema import CustomerAddressCreate
-from app.Schema.imageschema import ImageSchema, ImageUploadData
+from app.Schema.imageschema import ImageSchema, ImageToOrder, ImageUploadData
 from app.Schema.orderschema import OrderCreate
 from app.Schema.user import UserCreate, UserRead, UserUpdate
 from app.Services.adressservice import create_customer_address
-from app.Services.imageservice import (
-    create_images,
-    delete_image
-)
+from app.Services.imageservice import create_images, delete_image, image_to_order
 from app.Services.orderservice import (
     create_order,
     get_all_order,
+    get_order_images,
     get_orders_by_user_id,
     get_single_order_by_id,
     update_order_data_images_delete,
@@ -70,6 +68,15 @@ async def create_images_route(
 ):
     jsonData = json.loads(images.data)
     await create_images(jsonData, db)
+
+
+@app.post("/image/assign/order", tags=["Images"])
+async def add_order_image(
+    data: ImageToOrder,
+    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(active_user),
+):
+    return await image_to_order(data, db)
 
 
 @app.delete("/image/delete/{image_id}/{order_id}", tags=["Images"])
@@ -144,6 +151,15 @@ async def all_orders_route(
     db: AsyncSession = Depends(get_async_session), user: User = Depends(active_user)
 ):
     return await get_all_order(db)
+
+
+@app.get("/order/images/{order_id}", tags=["Orders"])
+async def order_images(
+    db: AsyncSession = Depends(get_async_session),
+    order_id: str = None,
+    user: User = Depends(active_user),
+):
+    return await get_order_images(db, order_id)
 
 
 @app.get("/order/{order_id}", tags=["Orders"])
