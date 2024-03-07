@@ -35,3 +35,8 @@ class ImageUpdate(ImageSchema):
 
 class ImageUploadData(BaseModel):
     data: str
+
+
+class ImageToOrder(BaseModel):
+    order_id: str
+    image_id: str

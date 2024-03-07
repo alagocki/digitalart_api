@@ -8,15 +8,10 @@ from starlette.responses import JSONResponse
 from app.Classes.users import active_user
 from app.Database.db import get_async_session
 from app.Model.customeradressmodel import CustomerAdressModel
-from app.Model.imagemodel import ImageModel
 from app.Model.ordermodel import OrderModel
 from app.Model.user import User
 from app.Schema.orderschema import OrderCreate
-from app.Services.imageservice import (
-    count_images_order,
-    create_images,
-    get_images_by_order,
-)
+from app.Services.imageservice import count_images_order
 
 dirname = dirname(dirname(abspath(__file__)))
 images_path = join(dirname, "CustomerFiles/")
@@ -162,7 +157,25 @@ async def get_all_order(
     )
 
     results = [{row} for row in orders]
+
+    # for result in results:
+    #     images = await db.execute('SELECT image_id FROM image_order WHERE order_id = :order_id', {"order_id": list(result)[0]["id"]})
+    #     result.add(tuple(images.all()))
+    #
+    # print(results)
     return {"data": results}
+
+
+async def get_order_images(
+    db: AsyncSession = Depends(get_async_session), order_id: str = None
+):
+    images = await db.execute(
+        "SELECT io.image_id, i.name, i.base64encoded FROM image_order io left join images i on io.image_id = i.id WHERE  io.order_id = :order_id",
+        {"order_id": order_id},
+    )
+    images_data = [{row} for row in images.all()]
+
+    return {"images_data": images_data}
 
 
 async def get_single_order_by_id(
